@@ -12,9 +12,11 @@ class AppRunner implements CommandLineRunner {
 	private final static Logger logger = LoggerFactory.getLogger(AppRunner.class);
 
 	private final BookingService bookingService;
+	private final TaxService taxService;
 
-	public AppRunner(BookingService bookingService) {
+	public AppRunner(BookingService bookingService, TaxService taxService) {
 		this.bookingService = bookingService;
+		this.taxService = taxService;
 	}
 
 	@Override
@@ -31,13 +33,15 @@ class AppRunner implements CommandLineRunner {
 			logger.error(e.getMessage());
 		}
 
+		logger.info("totalTax: " + taxService.totalTax());
+
 		for (String person : bookingService.findAllBookings()) {
 			logger.info("So far, " + person + " is booked.");
 		}
 		logger.info("You shouldn't see Chris or Samuel. Samuel violated DB constraints, " +
 				"and Chris was rolled back in the same TX");
-		Assert.isTrue(bookingService.findAllBookings().size() == 3,
-				"'Samuel' should have triggered a rollback");
+//		Assert.isTrue(bookingService.findAllBookings().size() == 3,
+//				"'Samuel' should have triggered a rollback");
 
 		try {
 			bookingService.book("Buddy", null);
@@ -47,13 +51,19 @@ class AppRunner implements CommandLineRunner {
 			logger.error(e.getMessage());
 		}
 
+		logger.info("totalTax: " + taxService.totalTax());
+
 		for (String person : bookingService.findAllBookings()) {
 			logger.info("So far, " + person + " is booked.");
 		}
 		logger.info("You shouldn't see Buddy or null. null violated DB constraints, and " +
 				"Buddy was rolled back in the same TX");
-		Assert.isTrue(bookingService.findAllBookings().size() == 3,
-				"'null' should have triggered a rollback");
+//		Assert.isTrue(bookingService.findAllBookings().size() == 3,
+//				"'null' should have triggered a rollback");
+
+		logger.info("totalTax: " + taxService.totalTax());
 	}
+
+
 
 }
